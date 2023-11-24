@@ -4,3 +4,20 @@ Application to convert Salesforce's package.xml to Copado's selection format
 npm init -y
 # Install dependencies
 npm install express@4.17.1 multer xml2js
+
+
+
+## To run S3 Bucket locally
+Run the below commands on Bash
+
+export NODE_ENV=production
+set NODE_ENV=production
+
+### Set the S3 config in the Environment as well for example
+export AWS_REGION="ap-southeast-2"
+export AWS_ACCESS_KEY_ID="ASIAXKNHJLAPD7PGR3Y3"
+export AWS_SECRET_ACCESS_KEY="AKe5F+otLBxOf62P+todpQq2fOo/uMKlmTGUpUw9"
+export AWS_SESSION_TOKEN="IQoJb3JpZ2luX2VjEAIaCmFwLXNvdXRoLTEiRjBEAiBzmjFbcVUMUu33pqRRTLuceWg8BjdxxinhuMzfaRYM1QIgNr4rKIBuMqXxTE2aC7txiuY7nVpfefbGjS0qCQq3JaQqsQIIWxAAGgw1MDMzOTg4ODEzMTAiDNoFhIKMj3Lrpl3qmyqOAozI0lz7C4h2HGdauNzXEfPG6OntpmHv9e9/U32eqTEcpklTlcKXqZx0yMNWXtHn5piTd7AFP/IeF2xKROS5fJzWLE/nKMZf0v+FY/NI513LbGyZ+eJ50SCi/MEPotOhLWNi3trJh/oELhmlmbOF/O6z4Wx1N8OcDzIdShp0ZDAL70NOYq82hVeh4pZEDxQyj6Wn1Qk4CqIuPStCFjOM2DwmZ9ZJ96/JEAY9a2TZjZVXK76ybmwhrG8jmvDhlCmBuwwu8Zb/MQ0LgHBF29zksVEpvhSgvYPAPjZFKEmiKlFqeDya3jf0hCvSjpd2F/QF0LltLdDTqlKaYBnMlFGR2IO40LSdQL0wPBVZkLWwYzCK74GrBjqeAZTKh1ekrfGdNyddFjZApL1B4t7Kfed9RJBBhRsY907iWn+WOIXWFPUhbroXZo2tbyB5V5qUKWQxERHQiGaATVS0oDYM+fNogCcyaiU4GsjQQ4CFhls2GOQs2+ALemgvRSjBglLFD9+b3c++LAP9V1gxO7hRjxpY+xytY3kH24KNIFtjXgsxEpNiXtaZ001QVh+rNzBtSacPCWjH41Fo"
+
+### Then run server command 
+node server.js
