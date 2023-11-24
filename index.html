@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XML to Text Converter</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: space-around;
+        }
+
+        #xmlSection, #resultSection {
+            width: 45%;
+            margin: 10px;
+        }
+
+        #xmlContent, #formattedText {
+            width: 100%;
+            height: 300px;
+            resize: vertical;
+        }
+
+        #formattedText {
+            margin-bottom: 10px;
+        }
+
+        #download {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="xmlSection">
+        <h2>XML Content</h2>
+        <input type="file" id="xmlFile" accept=".xml" onchange="displayXmlContent()">
+        <br>
+        <button type="button" onclick="uploadFile()">Convert</button>
+        <br>
+        <textarea id="xmlContent" readonly></textarea>
+    </div>
+
+    <div id="resultSection">
+        <h2>Formatted Text</h2>
+        <textarea id="formattedText" readonly></textarea>
+        <br>
+        <a id="download" download="result.txt" style="display: none;">Download Text File</a>
+    </div>
+
+    <script>
+        function displayXmlContent() {
+            const fileInput = document.getElementById('xmlFile');
+            const file = fileInput.files[0];
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function () {
+                    const xmlContent = reader.result;
+                    document.getElementById('xmlContent').value = xmlContent;
+                };
+
+                reader.readAsText(file);
+            }
+        }
+
+        function uploadFile() {
+            const fileInput = document.getElementById('xmlFile');
+            const file = fileInput.files[0];
+
+            if (file) {
+                const formData = new FormData();
+                formData.append('xmlFile', file);
+
+                fetch('/upload', {
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(response => response.text())  // Use response.text() instead of response.blob()
+                .then(formattedText => {
+                    document.getElementById('formattedText').value = formattedText;
+
+                    const downloadLink = document.getElementById('download');
+                    const currentDateTime = new Date().toISOString().replace(/[-:T.]/g, '').slice(0, 14);
+                    const fileName = `result_${currentDateTime}.txt`;
+
+                    downloadLink.href = `data:text/plain;charset=utf-8,${encodeURIComponent(formattedText)}`;
+                    downloadLink.download = fileName;
+
+                    downloadLink.style.display = 'block';
+                })
+                .catch(error => console.error('Error:', error));
+            }
+        }
+    </script>
+</body>
+</html>
