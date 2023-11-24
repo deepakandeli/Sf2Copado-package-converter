@@ -109,8 +109,8 @@ app.post('/upload', upload.single('xmlFile'), (req, res) => {
             });*/
 
         // Send the formatted text as response
-        //res.setHeader('Content-Type', 'text/plain');
-        //res.send(outputformattedText);
+        res.setHeader('Content-Type', 'text/plain');
+        res.send(outputformattedText);
     });
 });
 
