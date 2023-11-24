@@ -1,6 +1,8 @@
 const express = require('express');
 const multer = require('multer');
 const xml2js = require('xml2js');
+//const AWS = require("aws-sdk");
+//const s3 = new AWS.S3()
 
 const app = express();
 const port = 3001;
@@ -37,20 +39,20 @@ app.post('/upload', upload.single('xmlFile'), (req, res) => {
         const xmlString = JSON.stringify(result, null, 2);
         const lines = xmlData.split('\n');
         lines.forEach((line) => {
-            console.log('Inside Lines '+line);
+            //console.log('Inside Lines '+line);
             // Check for lines containing "<types>"
             if (line.includes('<types>')) {
-                console.log('Found Types');
+                //console.log('Found Types');
                 // If <types> element is found, reset the components array
                 components = [];
             } else if (line.includes('<name>')) {
                 // Extract the value between the elements
                 componentType = line.replace(/.*<(.*)>(.*)<\/.*>/, '$2').replace(/ *\/ */g, '/');
-                console.log('FOund Name');
+                //console.log('FOund Name');
             } else if (line.includes('<members>')) {
               // Extract the value between the elements
                 const component = line.replace(/.*<(.*)>(.*)<\/.*>/, '$2').replace(/ *\/ */g, '/');
-                console.log('Found component');
+                //console.log('Found component');
                 // Add the value to the components array
                 components.push(component);                
             } else if (line.includes('</types>')) {
@@ -64,7 +66,7 @@ app.post('/upload', upload.single('xmlFile'), (req, res) => {
           componentArray.forEach((type) => {
             // console.log(`<name>${type.componentType}</name>`);
              type.components.forEach((member) => {
-               console.log(`${type.componentType}/${member}`);
+               //console.log(`${type.componentType}/${member}`);
                outputformattedText=outputformattedText+`${type.componentType}/${member}\n`;
              });
            });
@@ -74,16 +76,25 @@ app.post('/upload', upload.single('xmlFile'), (req, res) => {
 
 
            const currentDateTime = new Date().toISOString().replace(/[-:T.]/g, '').slice(0, 14);
-           const fileName = `result_${currentDateTime}.txt`;
+           const fileName = `copadoformat_${currentDateTime}.txt`;
            const filePath = `public/${fileName}`;
+
+
+           /*await s3.putObject({
+            Body: outputformattedText,
+            Bucket: "cyclic-wide-eyed-puce-mackerel-ap-southeast-2",
+            Key: ${filePath},
+        }).promise()*/
    
-           fs.writeFile(filePath, outputformattedText, (err) => {
+           /*fs.writeFile(filePath, outputformattedText, (err) => {
+            console.log('Inside writeFile');
                if (err) {
                 console.log('err 2 => '+err);
                    return res.status(500).send('Error writing text file');
                }
    
                res.download(filePath, fileName, (err) => {
+                console.log('Inside Res.Download');
                    if (err) {
                        return res.status(500).send('Error downloading file');
                    }
@@ -95,7 +106,7 @@ app.post('/upload', upload.single('xmlFile'), (req, res) => {
                        }
                    });
                });
-            });
+            });*/
 
         // Send the formatted text as response
         //res.setHeader('Content-Type', 'text/plain');
