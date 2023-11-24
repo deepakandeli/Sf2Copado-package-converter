@@ -86,21 +86,32 @@ app.post('/upload', upload.single('xmlFile'), (req, res) => {
 
                 // Send success response with the S3 file key
                 // Download and delete the file directly without redirecting
-                const downloadUrl = s3.getSignedUrl('getObject', {
+                let s3File = s3.getObject({
+                    Bucket: 'cyclic-wide-eyed-puce-mackerel-ap-southeast-2',
+                    Key: fileName,
+                  });
+                /*const downloadUrl = s3.getSignedUrl('getObject', {
                     Bucket: 'cyclic-wide-eyed-puce-mackerel-ap-southeast-2',
                     Key: fileName,
                     Expires: 60, // URL expires in 60 seconds
                 });
                 console.log('downloadUrl 1 '+downloadUrl);
                 var downloadUrlSub = downloadUrl.substring(downloadUrl.indexOf('https:'));
-                console.log('downloadUrl 2 '+downloadUrlSub);
+                console.log('downloadUrl 2 '+downloadUrlSub);*/
                // Download the file
-                res.download(downloadUrlSub, fileName, (err) => {
+               var options = {
+                    Bucket: 'cyclic-wide-eyed-puce-mackerel-ap-southeast-2',
+                    Key: fileName,
+                };               
+               res.attachment(fileName);
+                var fileStream = s3.getObject(options).createReadStream();
+                fileStream.pipe(res);
+                /*res.download(fileName, (err) => {
                     if (err) {
                         console.log('err => '+err);
                         return res.status(500).send('Error downloading file');
                     }
-                });
+                });*/
                 // Send success response
                 //res.status(200).send(outputformattedText);
             });
