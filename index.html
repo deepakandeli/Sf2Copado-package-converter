@@ -111,7 +111,7 @@
         <textarea id="fileContent" readonly></textarea>
     </div>
     <div id="right-half" class="half">
-        <h1>Download Copado format file</h1>
+        <h1>Generated Copado format</h1>
         <div id="download-section" style="visibility: hidden;">
             <p>Download formatted *.txt file</p>
             <a id="download" download="result.txt" style="text-decoration:none;"> 
@@ -164,10 +164,14 @@
                     downloadLink.download = fileName;
 
                     //downloadLink.style.display = 'block';
-                    document.getElementById('download-section').style.visibility='visible';
+                   //document.getElementById('download-section').style.visibility='visible';
                 })
                 .catch(error => console.error('Error:', error));
             }
+        }
+
+        function selectText(textarea) {
+            textarea.select();
         }
     </script>
 </body>
