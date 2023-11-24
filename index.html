@@ -7,56 +7,133 @@
     <style>
         body {
             display: flex;
-            justify-content: space-around;
+            margin: 0;
+            font-family: Arial, sans-serif;
         }
 
-        #xmlSection, #resultSection {
-            width: 45%;
-            margin: 10px;
+        .half {
+            flex: 1;
+            box-sizing: border-box;
+            padding: 20px;
+            overflow-y: auto;
         }
 
-        #xmlContent, #formattedText {
+        #left-half {
+            background-color: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #upload-section {
+            min-height: 20vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #custom-upload {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        #fileInput {
+            font-size: 100px;
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+        }
+
+        #upload-section input[type="file"],
+        #upload-section button {
+            margin: 5px;
+        }
+
+        textarea {
             width: 100%;
-            height: 300px;
-            resize: vertical;
+            min-height: 50vh;
+            margin-top: 10px;
+            resize: none;
         }
 
-        #formattedText {
-            margin-bottom: 10px;
+        #right-half {
+            background-color: #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
-        #download {
-            display: none;
+        #download-section {
+            min-height: 20vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #download-content {
+            width: 100%;
+            min-height: 50vh;
+            margin-top: 10px;
+            resize: none;
+        }
+
+        #download-button, #upload-button {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+
+        #upload-button img, #download-button img {
+            margin-right: 5px;
         }
     </style>
 </head>
 <body>
-    <div id="xmlSection">
-        <h2>XML Content</h2>
-        <input type="file" id="xmlFile" accept=".xml" onchange="displayXmlContent()">
-        <br>
-        <button type="button" onclick="uploadFile()">Convert</button>
-        <br>
-        <textarea id="xmlContent" readonly></textarea>
+    <div id="left-half" class="half">
+        <h1>Upload Salesforce package.xml</h1>
+        <div id="upload-section">
+            <label id="custom-upload" for="fileInput">
+                <input type="file" id="fileInput" accept=".xml" onchange="displayXmlContent(); uploadFile();" />
+                <img src="https://cdn.iconscout.com/icon/free/png-256/free-upload-665-458393.png" height="20px" alt="Download Icon" />
+                    <span id="upload-label">Choose a file</span>
+            </label>
+        </div>
+        <textarea id="fileContent" readonly></textarea>
     </div>
-
-    <div id="resultSection">
-        <h2>Formatted Text</h2>
-        <textarea id="formattedText" readonly></textarea>
-        <br>
-        <a id="download" download="result.txt" style="display: none;">Download Text File</a>
+    <div id="right-half" class="half">
+        <h1>Download Copado format file</h1>
+        <div id="download-section" style="visibility: hidden;">
+            <p>Download formatted *.txt file</p>
+            <a id="download" download="result.txt" style="text-decoration:none;"> 
+                <button id="download-button" onclick="downloadFile()">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/7/72/Icon_Download_Black.svg" height="20px" alt="Download Icon" /> Download
+                </button>
+            </a>
+            
+        </div>
+        <textarea id="download-content" readonly onclick="selectText(this)"></textarea>
     </div>
 
     <script>
         function displayXmlContent() {
-            const fileInput = document.getElementById('xmlFile');
-            const file = fileInput.files[0];
+            var fileInput = document.getElementById('fileInput');
+            var fileContent = document.getElementById('fileContent');
+            if (fileInput.files.length > 0) {
+                var file = fileInput.files[0];
+                var reader = new FileReader();
 
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function () {
-                    const xmlContent = reader.result;
-                    document.getElementById('xmlContent').value = xmlContent;
+                reader.onload = function (e) {
+                    fileContent.value = e.target.result;
                 };
 
                 reader.readAsText(file);
@@ -64,7 +141,7 @@
         }
 
         function uploadFile() {
-            const fileInput = document.getElementById('xmlFile');
+            const fileInput = document.getElementById('fileInput');
             const file = fileInput.files[0];
 
             if (file) {
@@ -77,7 +154,7 @@
                 })
                 .then(response => response.text())  // Use response.text() instead of response.blob()
                 .then(formattedText => {
-                    document.getElementById('formattedText').value = formattedText;
+                    document.getElementById('download-content').value = formattedText;
 
                     const downloadLink = document.getElementById('download');
                     const currentDateTime = new Date().toISOString().replace(/[-:T.]/g, '').slice(0, 14);
@@ -86,7 +163,8 @@
                     downloadLink.href = `data:text/plain;charset=utf-8,${encodeURIComponent(formattedText)}`;
                     downloadLink.download = fileName;
 
-                    downloadLink.style.display = 'block';
+                    //downloadLink.style.display = 'block';
+                    document.getElementById('download-section').style.visibility='visible';
                 })
                 .catch(error => console.error('Error:', error));
             }
