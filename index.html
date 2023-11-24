@@ -117,7 +117,7 @@
         <div id="download-section" style="visibility: hidden;">
             <p>Download formatted *.txt file</p>
             <a id="download" download="result.txt" style="text-decoration:none;"> 
-                <button id="download-button" onclick="downloadFile()">
+                <button id="download-button">
                     <img src="https://upload.wikimedia.org/wikipedia/commons/7/72/Icon_Download_Black.svg" height="20px" alt="Download Icon" /> Download
                 </button>
             </a>
@@ -160,13 +160,13 @@
 
                     const downloadLink = document.getElementById('download');
                     const currentDateTime = new Date().toISOString().replace(/[-:T.]/g, '').slice(0, 14);
-                    const fileName = `result_${currentDateTime}.txt`;
+                    const fileName = `copadoformat_${currentDateTime}.txt`;
 
                     downloadLink.href = `data:text/plain;charset=utf-8,${encodeURIComponent(formattedText)}`;
                     downloadLink.download = fileName;
 
                     //downloadLink.style.display = 'block';
-                   //document.getElementById('download-section').style.visibility='visible';
+                   document.getElementById('download-section').style.visibility='visible';
                 })
                 .catch(error => console.error('Error:', error));
             }
