@@ -1,8 +1,8 @@
 const express = require('express');
 const multer = require('multer');
 const xml2js = require('xml2js');
-//const AWS = require("aws-sdk");
-//const s3 = new AWS.S3()
+const AWS = require('aws-sdk');
+
 
 const app = express();
 const port = 3001;
@@ -10,12 +10,21 @@ const port = 3001;
 // Set up middleware for handling file uploads
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
-const fs = require('fs');
 
 // Serve HTML form for file upload
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
 });
+
+// Configure AWS SDK with your credentials
+/*AWS.config.update({
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    region: process.env.AWS_REGION,
+});*/
+
+// Create an S3 instance
+const s3 = new AWS.S3();
 
 // Handle file upload and process XML
 app.post('/upload', upload.single('xmlFile'), (req, res) => {
@@ -27,11 +36,11 @@ app.post('/upload', upload.single('xmlFile'), (req, res) => {
     let components = [];
 
     const xmlData = req.file.buffer.toString();
-    console.log(xmlData);
-    // Process XML (you can customize this part based on your requirements)
+
+    // Process XML (customize this part based on your requirements)
     xml2js.parseString(xmlData, (err, result) => {
         if (err) {
-            console.log('err 1 => '+err);
+            console.log('Error parsing XML:', err);
             return res.status(500).send('Error parsing XML');
         }
 
@@ -39,80 +48,97 @@ app.post('/upload', upload.single('xmlFile'), (req, res) => {
         const xmlString = JSON.stringify(result, null, 2);
         const lines = xmlData.split('\n');
         lines.forEach((line) => {
-            //console.log('Inside Lines '+line);
-            // Check for lines containing "<types>"
             if (line.includes('<types>')) {
-                //console.log('Found Types');
-                // If <types> element is found, reset the components array
                 components = [];
             } else if (line.includes('<name>')) {
-                // Extract the value between the elements
                 componentType = line.replace(/.*<(.*)>(.*)<\/.*>/, '$2').replace(/ *\/ */g, '/');
-                //console.log('FOund Name');
             } else if (line.includes('<members>')) {
-              // Extract the value between the elements
                 const component = line.replace(/.*<(.*)>(.*)<\/.*>/, '$2').replace(/ *\/ */g, '/');
-                //console.log('Found component');
-                // Add the value to the components array
-                components.push(component);                
+                components.push(component);
             } else if (line.includes('</types>')) {
-              // If </types> element is found, add the collected components to the main array
-              if (componentType && components.length > 0) {
-                componentArray.push({ componentType, components });
-              }
+                if (componentType && components.length > 0) {
+                    componentArray.push({ componentType, components });
+                }
             }
-          });
-          var outputformattedText='';
-          componentArray.forEach((type) => {
-            // console.log(`<name>${type.componentType}</name>`);
-             type.components.forEach((member) => {
-               //console.log(`${type.componentType}/${member}`);
-               outputformattedText=outputformattedText+`${type.componentType}/${member}\n`;
-             });
-           });
+        });
 
+        let outputformattedText = '';
+        componentArray.forEach((type) => {
+            type.components.forEach((member) => {
+                outputformattedText += `${type.componentType}/${member}\n`;
+            });
+        });
 
+        // If running on the actual server, upload to S3
+        if (process.env.NODE_ENV === 'production') {
+            const currentDateTime = new Date().toISOString().replace(/[-:T.]/g, '').slice(0, 14);
+            const fileName = `copadoformat_${currentDateTime}.txt`;
 
+            s3.putObject({
+                Body: outputformattedText,
+                Bucket: 'cyclic-wide-eyed-puce-mackerel-ap-southeast-2',
+                Key: fileName,
+            }, (s3Error) => {
+                if (s3Error) {
+                    console.log('Error uploading to S3:', s3Error);
+                    return res.status(500).send('Error uploading to S3');
+                }
 
+                // Send success response with the S3 file key
+                // Download and delete the file directly without redirecting
+                const downloadUrl = s3.getSignedUrl('getObject', {
+                    Bucket: 'cyclic-wide-eyed-puce-mackerel-ap-southeast-2',
+                    Key: fileName,
+                    Expires: 60, // URL expires in 60 seconds
+                });
+                console.log('downloadUrl 1 '+downloadUrl);
+                var downloadUrlSub = downloadUrl.substring(downloadUrl.indexOf('https:'));
+                console.log('downloadUrl 2 '+downloadUrlSub);
+               // Download the file
+                res.download(downloadUrlSub, fileName, (err) => {
+                    if (err) {
+                        console.log('err => '+err);
+                        return res.status(500).send('Error downloading file');
+                    }
+                });
+                // Send success response
+                //res.status(200).send(outputformattedText);
+            });
+        } else {
+            // If running locally, write to a local file
+            const currentDateTime = new Date().toISOString().replace(/[-:T.]/g, '').slice(0, 14);
+            const fileName = `copadoformat_${currentDateTime}.txt`;
+            const filePath = `public/${fileName}`;
 
-           const currentDateTime = new Date().toISOString().replace(/[-:T.]/g, '').slice(0, 14);
-           const fileName = `copadoformat_${currentDateTime}.txt`;
-           const filePath = `public/${fileName}`;
+            // Write to local file
+            require('fs').writeFile(filePath, outputformattedText, (err) => {
+                if (err) {
+                    console.log('err 2 => '+err);
+                    console.log('Error writing local file:', err);
+                    return res.status(500).send('Error writing local file');
+                }
 
-
-           /*await s3.putObject({
-            Body: outputformattedText,
-            Bucket: "cyclic-wide-eyed-puce-mackerel-ap-southeast-2",
-            Key: ${filePath},
-        }).promise()*/
-   
-           /*fs.writeFile(filePath, outputformattedText, (err) => {
-            console.log('Inside writeFile');
-               if (err) {
-                console.log('err 2 => '+err);
-                   return res.status(500).send('Error writing text file');
-               }
-   
-               res.download(filePath, fileName, (err) => {
-                console.log('Inside Res.Download');
-                   if (err) {
-                       return res.status(500).send('Error downloading file');
-                   }
-   
-                   // Clean up: delete the temporary text file after download
-                   fs.unlink(filePath, (err) => {
-                       if (err) {
-                           console.error('Error deleting file:', err);
-                       }
-                   });
-               });
-            });*/
-
-        // Send the formatted text as response
-        res.setHeader('Content-Type', 'text/plain');
-        res.send(outputformattedText);
+                res.download(filePath, fileName, (err) => {
+                    console.log('Inside Res.Download');
+                        if (err) {
+                            return res.status(500).send('Error downloading file');
+                        }
+        
+                        // Clean up: delete the temporary text file after download
+                        require('fs').unlink(filePath, (err) => {
+                            if (err) {
+                                console.error('Error deleting file:', err);
+                            }
+                        });
+                    });
+                // Send success response with the file path
+                //res.status(200).send(outputformattedText);
+            });
+        }
     });
 });
+
+
 
 // Start the server
 app.listen(port, () => {
