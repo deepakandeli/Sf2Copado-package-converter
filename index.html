@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="google-adsense-account" content="ca-pub-2306505005807324">
-    <title>XML to Text Converter</title>
+    <title>Sf XML to Copado Text formatter</title>
     <style>
         body {
             display: flex;
@@ -98,35 +97,32 @@
             margin-right: 5px;
         }
     </style>
-    <!-- Google AdSense script -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2306505005807324" crossorigin="anonymous"> </script>
 </head>
 <body>
-    <div id="left-half" class="half">
-        <h1>Upload Salesforce package.xml</h1>
-        <div id="upload-section">
-            <label id="custom-upload" for="fileInput">
-                <input type="file" id="fileInput" accept=".xml" onchange="displayXmlContent(); uploadFile();" />
-                <img src="https://cdn.iconscout.com/icon/free/png-256/free-upload-665-458393.png" height="20px" alt="Download Icon" />
-                    <span id="upload-label">Choose a file</span>
-            </label>
+        <div id="left-half" class="half">
+            <h1>Upload Salesforce package.xml</h1>
+            <div id="upload-section">
+                <label id="custom-upload" for="fileInput">
+                    <input type="file" id="fileInput" accept=".xml" onchange="displayXmlContent(); uploadFile();" />
+                    <img src="https://cdn.iconscout.com/icon/free/png-256/free-upload-665-458393.png" height="20px" alt="Download Icon" />
+                        <span id="upload-label">Choose a file</span>
+                </label>
+            </div>
+            <textarea id="fileContent" readonly></textarea>
         </div>
-        <textarea id="fileContent" readonly></textarea>
-    </div>
-    <div id="right-half" class="half">
-        <h1>Generated Copado format</h1>
-        <div id="download-section" style="visibility: hidden;">
-            <p>Download formatted *.txt file</p>
-            <a id="download" download="result.txt" style="text-decoration:none;"> 
-                <button id="download-button">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/7/72/Icon_Download_Black.svg" height="20px" alt="Download Icon" /> Download
-                </button>
-            </a>
-            
+        <div id="right-half" class="half">
+            <h1>Generated Copado format</h1>
+            <div id="download-section" style="visibility: hidden;">
+                <p>Download formatted *.txt file</p>
+                <a id="download" download="result.txt" style="text-decoration:none;"> 
+                    <button id="download-button">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/7/72/Icon_Download_Black.svg" height="20px" alt="Download Icon" /> Download
+                    </button>
+                </a>
+                
+            </div>
+            <textarea id="download-content" readonly onclick="selectText(this)"></textarea>
         </div>
-        <textarea id="download-content" readonly onclick="selectText(this)"></textarea>
-    </div>
-
     <script>
         function displayXmlContent() {
             var fileInput = document.getElementById('fileInput');
